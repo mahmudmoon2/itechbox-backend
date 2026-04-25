@@ -1,6 +1,6 @@
 # store/serializers.py
 from rest_framework import serializers
-from .models import Category, Brand, Product, ProductImage, Banner
+from .models import Category, Brand, HomeSection, Product, ProductImage, Banner
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -34,3 +34,10 @@ class BannerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Banner
         fields = '__all__'
+        
+class HomeSectionSerializer(serializers.ModelSerializer):
+    products = ProductSerializer(many=True, read_only=True) # প্রোডাক্টের ডিটেইলস সহ পাঠাবে
+    
+    class Meta:
+        model = HomeSection
+        fields = ['id', 'title', 'products']

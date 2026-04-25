@@ -36,3 +36,11 @@ class BannerViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Banner.objects.filter(is_active=True)
     serializer_class = BannerSerializer
     permission_classes = [AllowAny]
+    
+from .models import HomeSection
+from .serializers import HomeSectionSerializer
+
+class HomeSectionViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = HomeSection.objects.filter(is_active=True)
+    serializer_class = HomeSectionSerializer
+    permission_classes = [AllowAny]

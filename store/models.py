@@ -1,6 +1,19 @@
 from django.db import models
 from django.conf import settings
 
+# store/models.py এ যোগ করুন
+class HomeSection(models.Model):
+    title = models.CharField(max_length=100) # সেকশনের নাম (যেমন: Gaming Gear)
+    order = models.PositiveIntegerField(default=0) # সেকশনটি কত নম্বরে দেখাবে
+    is_active = models.BooleanField(default=True)
+    products = models.ManyToManyField('Product', related_name='home_sections')
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return self.title
+
 class Category(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)

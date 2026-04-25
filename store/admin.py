@@ -1,6 +1,6 @@
 # store/admin.py
 from django.contrib import admin
-from .models import Category, Brand, Product, ProductImage, Banner, Order, OrderItem
+from .models import Category, Brand, Product, ProductImage, Banner, Order, OrderItem, HomeSection
 
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
@@ -31,8 +31,9 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Banner)
 class BannerAdmin(admin.ModelAdmin):
-    list_display = ('title', 'is_active')
-    list_filter = ('is_active',)
+    # placement ফিল্ড যোগ করা হয়েছে যাতে এডমিন প্যানেলেই দেখা যায় ব্যানারটি কোথায় আছে
+    list_display = ('title', 'placement', 'is_active') 
+    list_filter = ('placement', 'is_active')
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
@@ -40,3 +41,12 @@ class OrderAdmin(admin.ModelAdmin):
     search_fields = ('order_id', 'full_name', 'address')
     readonly_fields = ('order_id', 'user', 'full_name', 'address', 'total_price')
     inlines = [OrderItemInline]
+
+# --- নতুন HomeSection এর জন্য এডমিন ক্লাস ---
+@admin.register(HomeSection)
+class HomeSectionAdmin(admin.ModelAdmin):
+    list_display = ['title', 'order', 'is_active']
+    list_editable = ['order', 'is_active'] # এডমিন লিস্ট থেকেই order এবং active স্ট্যাটাস চেঞ্জ করা যাবে
+    search_fields = ['title']
+    list_filter = ['is_active']
+    filter_horizontal = ('products',) # প্রোডাক্ট সিলেক্ট করার জন্য সুন্দর ডুয়েল-বক্স ইন্টারফেস
