@@ -1,6 +1,6 @@
 # store/admin.py
 from django.contrib import admin
-from .models import Category, Brand, Product, ProductImage, Banner, Order, OrderItem, HomeSection
+from .models import Category, Brand, Product, ProductImage, Banner, Order, OrderItem, HomeSection, HappyClient
 
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
@@ -50,3 +50,8 @@ class HomeSectionAdmin(admin.ModelAdmin):
     search_fields = ['title']
     list_filter = ['is_active']
     filter_horizontal = ('products',) # প্রোডাক্ট সিলেক্ট করার জন্য সুন্দর ডুয়েল-বক্স ইন্টারফেস
+
+@admin.register(HappyClient)
+class HappyClientAdmin(admin.ModelAdmin):
+    list_display = ['name', 'logo']
+    search_fields = ['name']

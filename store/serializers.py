@@ -1,6 +1,6 @@
 # store/serializers.py
 from rest_framework import serializers
-from .models import Category, Brand, HomeSection, Product, ProductImage, Banner
+from .models import Category, Brand, HappyClient, HomeSection, Product, ProductImage, Banner
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -41,3 +41,8 @@ class HomeSectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = HomeSection
         fields = ['id', 'title', 'products']
+        
+class HappyClientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HappyClient
+        fields = '__all__'

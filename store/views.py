@@ -4,6 +4,14 @@ from rest_framework.permissions import AllowAny
 from .models import Category, Brand, Product, Banner
 from .serializers import CategorySerializer, BrandSerializer, ProductSerializer, BannerSerializer
 
+from rest_framework import generics
+from .models import HappyClient
+from .serializers import HappyClientSerializer
+
+class HappyClientList(generics.ListAPIView):
+    queryset = HappyClient.objects.all()
+    serializer_class = HappyClientSerializer
+    
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
