@@ -1,10 +1,13 @@
 # store/admin.py
 from django.contrib import admin
-from .models import Category, Brand, Product, ProductImage, Banner, Order, OrderItem, HomeSection, HappyClient
+from .models import (
+    Category, Brand, Product, ProductImage, Banner, 
+    Order, OrderItem, HomeSection, HappyClient, ProductColor
+)
 
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
-    extra = 1 # ডিফল্টভাবে একটা এক্সট্রা ইমেজ আপলোড করার ফিল্ড দেখাবে
+    extra = 1
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
@@ -21,17 +24,46 @@ class BrandAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug')
     prepopulated_fields = {'slug': ('name',)}
 
+# --- নতুন কালার মডেল অ্যাডমিন ---
+@admin.register(ProductColor)
+class ProductColorAdmin(admin.ModelAdmin):
+    list_display = ('name', 'hex_code')
+    search_fields = ('name',)
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'brand', 'category', 'price', 'stock', 'is_top_deal', 'is_exclusive')
-    list_filter = ('brand', 'category', 'is_top_deal', 'is_exclusive')
-    search_fields = ('name', 'description')
+    # লিস্ট ভিউতে নতুন কিছু ফিল্ড যোগ করা হলো
+    list_display = ('name', 'product_code', 'brand', 'price', 'stock', 'is_top_deal', 'emi_available')
+    list_filter = ('brand', 'category', 'is_top_deal', 'is_exclusive', 'emi_available')
+    search_fields = ('name', 'product_code', 'description')
     prepopulated_fields = {'slug': ('name',)}
-    inlines = [ProductImageInline] # প্রোডাক্ট পেজেই ছবি অ্যাড করার অপশন
+    inlines = [ProductImageInline]
+    
+    # কালার সিলেক্ট করার জন্য সুন্দর ডুয়েল-বক্স ইন্টারফেস
+    filter_horizontal = ('colors',)
+
+    # অ্যাডমিন প্যানেলের ফর্মটিকে সুন্দর সেকশনে ভাগ করা হলো
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('category', 'brand', 'name', 'slug', 'product_code')
+        }),
+        ('Descriptions & Specs (HTML)', {
+            'fields': ('description', 'specifications', 'warranty_info'),
+            'classes': ('collapse',), # চাইলে কলাপ্স করে রাখা যাবে
+        }),
+        ('Pricing & Stock', {
+            'fields': ('price', 'discount_price', 'stock')
+        }),
+        ('Attributes & Delivery', {
+            'fields': ('colors', 'delivery_timescale', 'emi_available')
+        }),
+        ('UI Display Flags', {
+            'fields': ('is_exclusive', 'is_top_deal')
+        }),
+    )
 
 @admin.register(Banner)
 class BannerAdmin(admin.ModelAdmin):
-    # placement ফিল্ড যোগ করা হয়েছে যাতে এডমিন প্যানেলেই দেখা যায় ব্যানারটি কোথায় আছে
     list_display = ('title', 'placement', 'is_active') 
     list_filter = ('placement', 'is_active')
 
@@ -42,14 +74,13 @@ class OrderAdmin(admin.ModelAdmin):
     readonly_fields = ('order_id', 'user', 'full_name', 'address', 'total_price')
     inlines = [OrderItemInline]
 
-# --- নতুন HomeSection এর জন্য এডমিন ক্লাস ---
 @admin.register(HomeSection)
 class HomeSectionAdmin(admin.ModelAdmin):
     list_display = ['title', 'order', 'is_active']
-    list_editable = ['order', 'is_active'] # এডমিন লিস্ট থেকেই order এবং active স্ট্যাটাস চেঞ্জ করা যাবে
+    list_editable = ['order', 'is_active']
     search_fields = ['title']
     list_filter = ['is_active']
-    filter_horizontal = ('products',) # প্রোডাক্ট সিলেক্ট করার জন্য সুন্দর ডুয়েল-বক্স ইন্টারফেস
+    filter_horizontal = ('products',)
 
 @admin.register(HappyClient)
 class HappyClientAdmin(admin.ModelAdmin):

@@ -1,16 +1,20 @@
 # store/views.py
-from rest_framework import viewsets
+from rest_framework import viewsets, generics
 from rest_framework.permissions import AllowAny
-from .models import Category, Brand, Product, Banner
-from .serializers import CategorySerializer, BrandSerializer, ProductSerializer, BannerSerializer
-
-from rest_framework import generics
-from .models import HappyClient
-from .serializers import HappyClientSerializer
+from .models import Category, Brand, Product, Banner, HappyClient, HomeSection
+from .serializers import (
+    CategorySerializer, 
+    BrandSerializer, 
+    ProductSerializer, 
+    BannerSerializer,
+    HappyClientSerializer,
+    HomeSectionSerializer
+)
 
 class HappyClientList(generics.ListAPIView):
     queryset = HappyClient.objects.all()
     serializer_class = HappyClientSerializer
+    permission_classes = [AllowAny]
     
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.all()
@@ -26,8 +30,11 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = [AllowAny]
+    
+    # slug দিয়ে ফিল্টার করার জন্য ম্যাজিক লাইন!
+    lookup_field = 'slug'
 
-    # ক্যাটাগরি বা ব্র্যান্ড দিয়ে ফিল্টার করার জন্য ছোট্ট একটা লজিক
+    # ক্যাটাগরি বা ব্র্যান্ড দিয়ে ফিল্টার করার জন্য লজিক
     def get_queryset(self):
         queryset = Product.objects.all()
         category = self.request.query_params.get('category', None)
@@ -45,9 +52,6 @@ class BannerViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = BannerSerializer
     permission_classes = [AllowAny]
     
-from .models import HomeSection
-from .serializers import HomeSectionSerializer
-
 class HomeSectionViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = HomeSection.objects.filter(is_active=True)
     serializer_class = HomeSectionSerializer

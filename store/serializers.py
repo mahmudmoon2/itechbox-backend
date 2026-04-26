@@ -1,6 +1,6 @@
 # store/serializers.py
 from rest_framework import serializers
-from .models import Category, Brand, HappyClient, HomeSection, Product, ProductImage, Banner
+from .models import Category, Brand, HappyClient, HomeSection, Product, ProductImage, Banner, ProductColor
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,6 +12,12 @@ class BrandSerializer(serializers.ModelSerializer):
         model = Brand
         fields = '__all__'
 
+# নতুন কালার সিরিয়ালাইজার
+class ProductColorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductColor
+        fields = ['id', 'name', 'hex_code']
+
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
@@ -19,15 +25,19 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
+    colors = ProductColorSerializer(many=True, read_only=True) # কালার যুক্ত করা হলো
     category_name = serializers.ReadOnlyField(source='category.name')
     brand_name = serializers.ReadOnlyField(source='brand.name')
 
     class Meta:
         model = Product
+        # নতুন ফিল্ডগুলো (product_code, specifications, warranty_info ইত্যাদি) যোগ করা হলো
         fields = [
-            'id', 'name', 'slug', 'description', 'price', 'discount_price', 
-            'stock', 'category', 'category_name', 'brand', 'brand_name', 
-            'is_exclusive', 'is_top_deal', 'images'
+            'id', 'category', 'category_name', 'brand', 'brand_name', 
+            'name', 'slug', 'product_code', 'description', 'specifications', 
+            'warranty_info', 'price', 'discount_price', 'stock', 
+            'delivery_timescale', 'emi_available', 'colors', 'images', 
+            'is_exclusive', 'is_top_deal', 'created_at'
         ]
 
 class BannerSerializer(serializers.ModelSerializer):
@@ -36,7 +46,7 @@ class BannerSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 class HomeSectionSerializer(serializers.ModelSerializer):
-    products = ProductSerializer(many=True, read_only=True) # প্রোডাক্টের ডিটেইলস সহ পাঠাবে
+    products = ProductSerializer(many=True, read_only=True)
     
     class Meta:
         model = HomeSection
