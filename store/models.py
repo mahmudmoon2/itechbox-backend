@@ -17,10 +17,25 @@ class Brand(models.Model):
     def __str__(self):
         return self.name
 
-# নতুন ডিজাইনের জন্য কালার মডেল
+# --- নতুন স্টোরেজ মডেল ---
+class Storage(models.Model):
+    name = models.CharField(max_length=50) # e.g., 128GB, 256GB
+    
+    def __str__(self):
+        return self.name
+
+# --- নতুন রিজিয়ন মডেল ---
+class Region(models.Model):
+    name = models.CharField(max_length=50) # e.g., USA, CN - Dual SIM
+    
+    def __str__(self):
+        return self.name
+
+# --- কালার মডেলে ইমেজ ফিল্ড যোগ করা হলো ---
 class ProductColor(models.Model):
     name = models.CharField(max_length=50) # e.g., Black, Silver
     hex_code = models.CharField(max_length=7, blank=True) # e.g., #000000
+    image = models.ImageField(upload_to='color_images/', blank=True, null=True) # কালারের স্পেসিফিক ইমেজ
 
     def __str__(self):
         return self.name
@@ -31,7 +46,6 @@ class Product(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
     
-    # নতুন ডিজাইনের জন্য এক্সট্রা ফিল্ডস
     product_code = models.CharField(max_length=50, blank=True, null=True, help_text="e.g., AGL32525")
     description = models.TextField(help_text="Detailed HTML description")
     specifications = models.TextField(blank=True, null=True, help_text="HTML for specs (e.g., <table>...</table>)")
@@ -45,6 +59,8 @@ class Product(models.Model):
     emi_available = models.BooleanField(default=False)
     
     colors = models.ManyToManyField(ProductColor, blank=True, related_name='products')
+    storages = models.ManyToManyField(Storage, blank=True, related_name='products') # নতুন ফিল্ড
+    regions = models.ManyToManyField(Region, blank=True, related_name='products') # নতুন ফিল্ড
     
     # UI Sections Flags
     is_exclusive = models.BooleanField(default=False)

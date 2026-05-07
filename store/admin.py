@@ -1,8 +1,7 @@
-# store/admin.py
 from django.contrib import admin
 from .models import (
     Category, Brand, Product, ProductImage, Banner, 
-    Order, OrderItem, HomeSection, HappyClient, ProductColor
+    Order, OrderItem, HomeSection, HappyClient, ProductColor, Storage, Region
 )
 
 class ProductImageInline(admin.TabularInline):
@@ -24,38 +23,44 @@ class BrandAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug')
     prepopulated_fields = {'slug': ('name',)}
 
-# --- নতুন কালার মডেল অ্যাডমিন ---
 @admin.register(ProductColor)
 class ProductColorAdmin(admin.ModelAdmin):
     list_display = ('name', 'hex_code')
     search_fields = ('name',)
 
+# --- নতুন স্টোরেজ এবং রিজিয়ন অ্যাডমিন ---
+@admin.register(Storage)
+class StorageAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+@admin.register(Region)
+class RegionAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    # লিস্ট ভিউতে নতুন কিছু ফিল্ড যোগ করা হলো
     list_display = ('name', 'product_code', 'brand', 'price', 'stock', 'is_top_deal', 'emi_available')
     list_filter = ('brand', 'category', 'is_top_deal', 'is_exclusive', 'emi_available')
     search_fields = ('name', 'product_code', 'description')
     prepopulated_fields = {'slug': ('name',)}
     inlines = [ProductImageInline]
     
-    # কালার সিলেক্ট করার জন্য সুন্দর ডুয়েল-বক্স ইন্টারফেস
-    filter_horizontal = ('colors',)
+    # স্টোরেজ এবং রিজিয়ন অ্যাড করা হলো
+    filter_horizontal = ('colors', 'storages', 'regions')
 
-    # অ্যাডমিন প্যানেলের ফর্মটিকে সুন্দর সেকশনে ভাগ করা হলো
     fieldsets = (
         ('Basic Information', {
             'fields': ('category', 'brand', 'name', 'slug', 'product_code')
         }),
         ('Descriptions & Specs (HTML)', {
             'fields': ('description', 'specifications', 'warranty_info'),
-            'classes': ('collapse',), # চাইলে কলাপ্স করে রাখা যাবে
+            'classes': ('collapse',), 
         }),
         ('Pricing & Stock', {
             'fields': ('price', 'discount_price', 'stock')
         }),
         ('Attributes & Delivery', {
-            'fields': ('colors', 'delivery_timescale', 'emi_available')
+            'fields': ('colors', 'storages', 'regions', 'delivery_timescale', 'emi_available')
         }),
         ('UI Display Flags', {
             'fields': ('is_exclusive', 'is_top_deal')
