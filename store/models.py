@@ -17,21 +17,21 @@ class Brand(models.Model):
     def __str__(self):
         return self.name
 
-# --- নতুন স্টোরেজ মডেল ---
+# --- স্টোরেজ মডেল ---
 class Storage(models.Model):
     name = models.CharField(max_length=50) # e.g., 128GB, 256GB
     
     def __str__(self):
         return self.name
 
-# --- নতুন রিজিয়ন মডেল ---
+# --- রিজিয়ন মডেল ---
 class Region(models.Model):
     name = models.CharField(max_length=50) # e.g., USA, CN - Dual SIM
     
     def __str__(self):
         return self.name
 
-# --- কালার মডেলে ইমেজ ফিল্ড যোগ করা হলো ---
+# --- কালার মডেল ---
 class ProductColor(models.Model):
     name = models.CharField(max_length=50) # e.g., Black, Silver
     hex_code = models.CharField(max_length=7, blank=True) # e.g., #000000
@@ -59,12 +59,15 @@ class Product(models.Model):
     emi_available = models.BooleanField(default=False)
     
     colors = models.ManyToManyField(ProductColor, blank=True, related_name='products')
-    storages = models.ManyToManyField(Storage, blank=True, related_name='products') # নতুন ফিল্ড
-    regions = models.ManyToManyField(Region, blank=True, related_name='products') # নতুন ফিল্ড
+    storages = models.ManyToManyField(Storage, blank=True, related_name='products') 
+    regions = models.ManyToManyField(Region, blank=True, related_name='products') 
     
     # UI Sections Flags
     is_exclusive = models.BooleanField(default=False)
     is_top_deal = models.BooleanField(default=False)
+    
+    # --- 500 Error ফিক্স করার জন্য এই ফিল্ডটি যুক্ত করা হলো ---
+    is_customizable_mac = models.BooleanField(default=False)
     
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -133,3 +136,25 @@ class HappyClient(models.Model):
 
     def __str__(self):
         return self.name
+    
+# --- Mac Customization Models ---
+class CustomizationCategory(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='customization_categories')
+    name = models.CharField(max_length=100) # e.g., "Memory", "Storage", "Power Adapter"
+    description = models.CharField(max_length=200, blank=True, null=True) # e.g., "How much memory is right for you?"
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.product.name} - {self.name}"
+
+class CustomizationOption(models.Model):
+    category = models.ForeignKey(CustomizationCategory, on_delete=models.CASCADE, related_name='options')
+    name = models.CharField(max_length=100) # e.g., "16GB Unified Memory"
+    extra_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # e.g., 20000.00
+    is_default = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.name} (+৳{self.extra_price})"

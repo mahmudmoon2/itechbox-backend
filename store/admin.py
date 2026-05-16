@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     Category, Brand, Product, ProductImage, Banner, 
-    Order, OrderItem, HomeSection, HappyClient, ProductColor, Storage, Region
+    Order, OrderItem, HomeSection, HappyClient, ProductColor, Storage, Region,CustomizationCategory, CustomizationOption
 )
 
 class ProductImageInline(admin.TabularInline):
@@ -91,3 +91,13 @@ class HomeSectionAdmin(admin.ModelAdmin):
 class HappyClientAdmin(admin.ModelAdmin):
     list_display = ['name', 'logo']
     search_fields = ['name']
+    
+class CustomizationOptionInline(admin.TabularInline):
+    model = CustomizationOption
+    extra = 1
+
+@admin.register(CustomizationCategory)
+class CustomizationCategoryAdmin(admin.ModelAdmin):
+    list_display = ('product', 'name', 'order')
+    list_filter = ('product',)
+    inlines = [CustomizationOptionInline]

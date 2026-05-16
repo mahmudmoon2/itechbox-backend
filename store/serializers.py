@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import (Category, Brand, HappyClient, HomeSection, Product, 
-                     ProductImage, Banner, ProductColor, Storage, Region)
+                     ProductImage, Banner, ProductColor, Storage, Region,
+                     CustomizationCategory, CustomizationOption) # নতুন মডেলগুলো ইমপোর্ট করা হলো
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,7 +13,6 @@ class BrandSerializer(serializers.ModelSerializer):
         model = Brand
         fields = '__all__'
 
-# --- নতুন স্টোরেজ এবং রিজিয়ন সিরিয়ালাইজার ---
 class StorageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Storage
@@ -26,20 +26,37 @@ class RegionSerializer(serializers.ModelSerializer):
 class ProductColorSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductColor
-        fields = ['id', 'name', 'hex_code', 'image'] # ইমেজ অ্যাড করা হলো
+        fields = ['id', 'name', 'hex_code', 'image']
 
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
         fields = ['id', 'image', 'is_feature']
 
+# --- Mac Customization Serializers ---
+class CustomizationOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomizationOption
+        fields = ['id', 'name', 'extra_price', 'is_default']
+
+class CustomizationCategorySerializer(serializers.ModelSerializer):
+    options = CustomizationOptionSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = CustomizationCategory
+        fields = ['id', 'name', 'description', 'order', 'options']
+
+# --- Product Serializer ---
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     colors = ProductColorSerializer(many=True, read_only=True) 
-    storages = StorageSerializer(many=True, read_only=True) # স্টোরেজ যোগ
-    regions = RegionSerializer(many=True, read_only=True) # রিজিয়ন যোগ
+    storages = StorageSerializer(many=True, read_only=True) 
+    regions = RegionSerializer(many=True, read_only=True) 
     category_name = serializers.ReadOnlyField(source='category.name')
     brand_name = serializers.ReadOnlyField(source='brand.name')
+    
+    # Customization Categories যুক্ত করা হলো
+    customization_categories = CustomizationCategorySerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
@@ -48,8 +65,8 @@ class ProductSerializer(serializers.ModelSerializer):
             'name', 'slug', 'product_code', 'description', 'specifications', 
             'warranty_info', 'price', 'discount_price', 'stock', 
             'delivery_timescale', 'emi_available', 'colors', 'storages', 'regions', 'images', 
-            'is_exclusive', 'is_top_deal', 'created_at'
-        ]
+            'is_exclusive', 'is_top_deal', 'is_customizable_mac', 'customization_categories', 'created_at'
+        ] # is_customizable_mac এবং customization_categories যোগ করা হয়েছে
 
 class BannerSerializer(serializers.ModelSerializer):
     class Meta:
