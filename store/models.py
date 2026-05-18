@@ -138,10 +138,20 @@ class HappyClient(models.Model):
         return self.name
     
 # --- Mac Customization Models ---
+
+
+from django.db import models
+
+# Level 1: Category (e.g., "Chip", "Memory")
 class CustomizationCategory(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='customization_categories')
-    name = models.CharField(max_length=100) # e.g., "Memory", "Storage", "Power Adapter"
-    description = models.CharField(max_length=200, blank=True, null=True) # e.g., "How much memory is right for you?"
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='customization_categories')
+    name = models.CharField(max_length=500)
+    depends_on = models.ManyToManyField(
+        'CustomizationOption', 
+        blank=True, 
+        related_name='dependent_categories',
+        help_text="Hold Ctrl/Cmd to select multiple options. This entire category will show ONLY if at least one is selected."
+    )
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -150,11 +160,48 @@ class CustomizationCategory(models.Model):
     def __str__(self):
         return f"{self.product.name} - {self.name}"
 
-class CustomizationOption(models.Model):
-    category = models.ForeignKey(CustomizationCategory, on_delete=models.CASCADE, related_name='options')
-    name = models.CharField(max_length=100) # e.g., "16GB Unified Memory"
-    extra_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # e.g., 20000.00
-    is_default = models.BooleanField(default=False)
+# Level 2: Sub-Category (e.g., "Apple M4 Max Chip", "Unified Memory")
+class CustomizationSubCategory(models.Model):
+    category = models.ForeignKey(CustomizationCategory, on_delete=models.CASCADE, related_name='sub_categories')
+    name = models.CharField(max_length=500)
+    description = models.TextField(blank=True, null=True)
+    
+    # --- NEW: Sub-Category Level Dependency ---
+    depends_on = models.ManyToManyField(
+        'CustomizationOption', 
+        blank=True, 
+        related_name='dependent_sub_categories',
+        help_text="Hold Ctrl/Cmd to select multiple options. This sub-category will show ONLY if at least one is selected."
+    )
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
 
     def __str__(self):
-        return f"{self.name} (+৳{self.extra_price})"
+        return f"{self.category.name} -> {self.name}"
+
+# Level 3: Option (e.g., "14-core CPU, 32-core GPU", "36GB")
+class CustomizationOption(models.Model):
+    sub_category = models.ForeignKey(
+        CustomizationSubCategory, 
+        on_delete=models.CASCADE, 
+        related_name='options',
+        null=True, 
+        blank=True
+    )
+    name = models.CharField(max_length=500)
+    description = models.TextField(blank=True, null=True) 
+    extra_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    is_default = models.BooleanField(default=False)
+
+    depends_on = models.ManyToManyField(
+        'self', 
+        blank=True, 
+        symmetrical=False,
+        related_name='dependent_options',
+        help_text="Hold Ctrl/Cmd to select multiple options. This option is clickable ONLY if at least one selected."
+    )
+
+    def __str__(self):
+        return f"{self.name}"

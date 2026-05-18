@@ -1,7 +1,10 @@
 from django.contrib import admin
+from django.db import models
+from django.forms import Textarea, TextInput
 from .models import (
     Category, Brand, Product, ProductImage, Banner, 
-    Order, OrderItem, HomeSection, HappyClient, ProductColor, Storage, Region,CustomizationCategory, CustomizationOption
+    Order, OrderItem, HomeSection, HappyClient, ProductColor, Storage, Region, 
+    CustomizationCategory, CustomizationSubCategory, CustomizationOption
 )
 
 class ProductImageInline(admin.TabularInline):
@@ -28,7 +31,7 @@ class ProductColorAdmin(admin.ModelAdmin):
     list_display = ('name', 'hex_code')
     search_fields = ('name',)
 
-# --- নতুন স্টোরেজ এবং রিজিয়ন অ্যাডমিন ---
+# --- স্টোরেজ এবং রিজিয়ন অ্যাডমিন ---
 @admin.register(Storage)
 class StorageAdmin(admin.ModelAdmin):
     list_display = ('name',)
@@ -40,12 +43,11 @@ class RegionAdmin(admin.ModelAdmin):
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'product_code', 'brand', 'price', 'stock', 'is_top_deal', 'emi_available')
-    list_filter = ('brand', 'category', 'is_top_deal', 'is_exclusive', 'emi_available')
+    list_filter = ('brand', 'category', 'is_top_deal', 'is_exclusive', 'emi_available', 'is_customizable_mac')
     search_fields = ('name', 'product_code', 'description')
     prepopulated_fields = {'slug': ('name',)}
     inlines = [ProductImageInline]
     
-    # স্টোরেজ এবং রিজিয়ন অ্যাড করা হলো
     filter_horizontal = ('colors', 'storages', 'regions')
 
     fieldsets = (
@@ -63,7 +65,7 @@ class ProductAdmin(admin.ModelAdmin):
             'fields': ('colors', 'storages', 'regions', 'delivery_timescale', 'emi_available')
         }),
         ('UI Display Flags', {
-            'fields': ('is_exclusive', 'is_top_deal')
+            'fields': ('is_exclusive', 'is_top_deal', 'is_customizable_mac')
         }),
     )
 
@@ -92,12 +94,45 @@ class HappyClientAdmin(admin.ModelAdmin):
     list_display = ['name', 'logo']
     search_fields = ['name']
     
+# ==========================================
+# --- Mac Customization Super Admin ---
+# ==========================================
+
+@admin.register(CustomizationOption)
+class CustomizationOptionAdmin(admin.ModelAdmin):
+    list_display = ('name', 'sub_category')
+    search_fields = ('name',)
+
 class CustomizationOptionInline(admin.TabularInline):
     model = CustomizationOption
-    extra = 1
+    extra = 0
+    fields = ('name', 'description', 'extra_price', 'is_default', 'depends_on') 
+    
+    formfield_overrides = {
+        models.TextField: {'widget': Textarea(attrs={'rows': 2, 'cols': 30})},
+        models.CharField: {'widget': TextInput(attrs={'size': '20'})},
+    }
 
+@admin.register(CustomizationSubCategory)
+class CustomizationSubCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'category', 'order')
+    list_filter = ('category__product', 'category')
+    inlines = [CustomizationOptionInline]
+
+class CustomizationSubCategoryInline(admin.TabularInline):
+    model = CustomizationSubCategory
+    extra = 0
+    fields = ('name', 'description', 'order', 'depends_on')
+    autocomplete_fields = ['depends_on']
+
+# (শুধুমাত্র এই ক্লাসটি আপডেট করুন)
 @admin.register(CustomizationCategory)
 class CustomizationCategoryAdmin(admin.ModelAdmin):
-    list_display = ('product', 'name', 'order')
+    list_display = ('name', 'product', 'order')
+    list_editable = ('order',)
     list_filter = ('product',)
-    inlines = [CustomizationOptionInline]
+    search_fields = ('name', 'product__name')
+    # UPDATE: autocomplete_fields এ depends_on দেওয়া হলো
+    autocomplete_fields = ['product', 'depends_on'] 
+    inlines = [CustomizationSubCategoryInline]
+    inlines = [CustomizationSubCategoryInline]
